@@ -1,12 +1,13 @@
 {
-  "name": "JobScrapper",
+  "name": "job-scrapper",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "test": "jest",
-    "watch": "jest --watchAll"
+    "watch": "jest --watchAll",
+    "server": "node server.js"
   },
   "keywords": [],
   "author": "",

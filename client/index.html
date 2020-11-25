@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>SERVE2</h1>
+    <div id="App"></div>
+</body>
+<script>
+
+    const renderResult = (jobs) => {
+        const body = document.querySelector("#App");
+        console.log(jobs);
+        jobs.job_card.map(j => {
+            const { job_title, company, link, diff: daysOld } = j
+            const job_container = document.createElement('div')
+            job_container.className = "job-container";
+
+            const offer__link = document.createElement('a')
+            offer__link.href = link;
+
+            const offer__titre = document.createElement('h3');
+            offer__titre.textContent = job_title;
+
+            const offer__company = document.createElement('p');
+            offer__company.textContent = company;
+
+
+            const offer__daysOld = document.createElement('p');
+            offer__daysOld.textContent = daysOld;
+            job_container.appendChild(offer__titre).appendChild(offer__company).appendChild(offer__daysOld)
+
+            offer__link.appendChild(job_container);
+
+            body.appendChild(offer__link);
+        })
+
+    }
+
+    const d = fetch("./data/final_data.json")
+        .then(res => {
+            console.log(res);
+            return res.json()
+        })
+        .then(renderResult)
+        .catch(e => console.log(e.message))
+
+</script>
+
+</html>

@@ -1,0 +1,29 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body>h1 {
+    display: flex;
+    justify-content: center;
+}
+
+#App {
+    display: grid;
+    width: 90%;
+    margin: 10px auto;
+    grid-template-columns: repeat(1fr, 12);
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
+.job-container {
+    grid-column: 2 / 10;
+    border: 1px solid #000;
+    transition: background-color .7s ease-out;
+    padding: 10px;
+}
+
+.job-container:hover {
+    background-color: rgb(216, 213, 213);
+}

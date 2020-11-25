@@ -1,14 +1,13 @@
 const puppeteer = require('puppeteer');
-const fs = require("fs");
-const { exec } = require("child_process");
-const { navigateFromOfferToCompanyWebSite, colorLog, scrapJobDetailsFromPage } = require('./utils');
+const { navigateFromOfferToCompanyWebSite, colorLog, scrapUntilDateReach } = require('./utils');
 const WebLink = require('../Models/WebLink');
 
 const colors = require('../colorsLog');
 
-(async () => {
-    const apec_url = new WebLink('APEC').setUrlSearchParams({ key_word: "react", location: 'toulouse' });
-    const MAX_DAYS_OLD_OF_PUBLICATION = 7;
+module.exports = async function apecScrap(options) {
+    const apec_url = new WebLink('APEC')
+    options && apec_url.setUrlSearchParams(options.params);
+    const MAX_DAYS_OLD_OF_PUBLICATION = options && options.daysOld_limit || 3;
 
     colorLog('BgGreen', apec_url);
 
@@ -18,31 +17,28 @@ const colors = require('../colorsLog');
         'ignoreHTTPSErrors': true
     });
 
-    let job_card = await scrapJobDetailsFromPage(browser, apec_url);
+    /**
+     * going though pages of job list while limit number of job days/old is not passed   
+     */
+    let job_card = await scrapUntilDateReach(browser, apec_url, MAX_DAYS_OLD_OF_PUBLICATION)
 
-    job_card = job_card.filter(job => job.diff <= MAX_DAYS_OLD_OF_PUBLICATION)
-
+    /**
+     * Navigate though each job page until job_offer is reached and 
+     * Scrapping returning URL  or Null if only int job of APEC
+     */
     for (const job in job_card) {
-        console.log(colors.FgYellow + "job n°" + job + " launching ___" + colors.Reset);
+        console.log(colors.FgYellow + "job n°" + (+job + 1) + " / " + job_card.length + " launching ___" + colors.Reset);
         const updated_job = await navigateFromOfferToCompanyWebSite(browser, job_card[job]);
         job_card[job] = updated_job;
     }
 
-    // filter null jobs (apec int jobs link) if setting ONLY_EXT_JOBS_OFFER is set to True
+    /**
+     * Filter null jobs (apec int jobs link) if setting ONLY_EXT_JOBS_OFFER is set to True
+     */
     job_card = job_card.filter(job => job !== null);
 
-    console.log(colors.BgRed + 'end of program', colors.Reset);
-    console.log({ job_card });
-    console.log(colors.BgCyan + "\n" + "prepare data writting on file : final_data.json \n" + colors.Reset);
-
-    fs.writeFile("final_data.json", JSON.stringify({ job_card }), (err) => {
-        if (err) throw err;
-        console.log(colors.FgGreen + 'job cards saved successfully' + colors.Reset);
-    });
-
     await browser.close();
-    await exec("open final_data.json", (err) => {
-        if (err) colorLog("FgRed", err.message);
-    })
-})();
+    return job_card;
+}
+
 
