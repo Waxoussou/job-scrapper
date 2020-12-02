@@ -1,14 +1,15 @@
-var http = require('http');
-var fs = require('fs');
-var path = require('path');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 http.createServer(function (request, response) {
     console.log('request starting...');
-    var filePath = './client' + request.url;
+    let filePath = './client' + request.url;
     if (filePath == './client/') filePath = './client/index.html';
 
-    var extname = path.extname(filePath);
-    var contentType = 'text/html';
+    const extname = path.extname(filePath);
+    const contentType = 'text/html';
+
     switch (extname) {
         case '.js':
             contentType = 'text/javascript';

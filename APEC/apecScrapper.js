@@ -2,14 +2,14 @@ const puppeteer = require('puppeteer');
 const { navigateFromOfferToCompanyWebSite, colorLog, scrapUntilDateReach } = require('./utils');
 const WebLink = require('../Models/WebLink');
 
-const colors = require('../colorsLog');
+const colors = require('../colorsUtils');
 
 module.exports = async function apecScrap(options) {
-    const apec_url = new WebLink('APEC')
-    options && apec_url.setUrlSearchParams(options.params);
+    const url = new WebLink('APEC');
+    options && url.setUrlSearchParams(options.params);
     const MAX_DAYS_OLD_OF_PUBLICATION = options && options.daysOld_limit || 3;
 
-    colorLog('BgGreen', apec_url);
+    colorLog('BgGreen', url);
 
     const browser = await puppeteer.launch({
         // headless: false,
@@ -20,7 +20,7 @@ module.exports = async function apecScrap(options) {
     /**
      * going though pages of job list while limit number of job days/old is not passed   
      */
-    let job_card = await scrapUntilDateReach(browser, apec_url, MAX_DAYS_OLD_OF_PUBLICATION)
+    let job_card = await scrapUntilDateReach(browser, url, MAX_DAYS_OLD_OF_PUBLICATION)
 
     /**
      * Navigate though each job page until job_offer is reached and 

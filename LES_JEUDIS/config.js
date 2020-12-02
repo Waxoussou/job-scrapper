@@ -3,6 +3,6 @@ module.exports = {
     PARAMS: {
         key_word: 'q',
         sort_type: "sort",
-        localisation: "loc"
+        location: "loc"
     }
 }
