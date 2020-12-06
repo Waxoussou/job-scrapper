@@ -1,6 +1,7 @@
 module.exports = {
     URL: "https://www.apec.fr/candidat/recherche-emploi.html/emploi?motsCles=&sortsType=DATE&page=&lieux=",
     PARAMS: {
+        type: "BY_SEARCHPARAMS",
         key_word: "motsCles",
         sort_type: "sortsType",
         page: "page",
@@ -11,7 +12,6 @@ module.exports = {
         TOULOUSE: 572357,
         OCCITANIE: 20076,
     },
-    // MAX_DAYS_OLD_OF_PUBLICATION = 3,
     ONLY_EXT_JOBS_OFFER: true
 
 }

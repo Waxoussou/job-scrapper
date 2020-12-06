@@ -1,18 +1,20 @@
-const { getPage } = require('../utils');
+const isInternalLink = (url) => {
+    const regexp = /to=int$/;
+    const endWithtInt = regexp.test(url);
+    return endWithtInt
+}
+
 
 module.exports = {
     url: 'https://www.apec.fr/candidat/recherche-emploi.html/emploi',
     scrapMethodology: async (browser) => {
         const scrapAll = async () => {
             const page = await browser.getPage();
-
             const jobs = await collectAllJobsFromPage(page);
-
+            handleApecPublicationDateFormat(jobs);
             for (job in jobs) {
                 const { link } = jobs[job];
-                // [TODO] : implement goToPageAndCollect in Scrapper Class
                 jobs[job].link = await browser.goToPageAndCollect(link, getExternalLink);
-                // jobs[job].link = await getExternalLink(browser, link);
             }
 
             return jobs
@@ -41,29 +43,29 @@ module.exports = {
             }
         }
 
-        const getExternalLink = async (page, handleTargetPage) => {
+        const handleApecPublicationDateFormat = (jobs) => {
+            jobs.map(job => {
+                const [day, month, year] = job.details.date_of_publication.split('/');
+                job.details.date_of_publication = `${month}/${day}/${year}`;
+                return jobs;
+            })
+        }
+
+        const getExternalLink = async (page, handleNewTargetPage) => {
             try {
-                // const page = await browser.getPage();
-                // await page.goto(job.link);
                 const next_link = await findLinkOnJobPage(page);
-                console.log({ next_link });
+                // console.log({ next_link });
                 if (isInternalLink(next_link)) {
                     return next_link
                 } else {
                     await page.goto(next_link)
                     await clickOnExternalLink(page);
-                    const external_link = await handleTargetPage(page);
+                    const external_link = await handleNewTargetPage(page);
                     return external_link;
                 }
             } catch (error) {
                 console.log("ERROR [EXT LINK NOT FOUND]: ", error.message);
             }
-        }
-
-        const isInternalLink = (url) => {
-            const regexp = /to=int$/;
-            const endWithtInt = regexp.test(url);
-            return endWithtInt
         }
 
         const findLinkOnJobPage = async (page) => {
@@ -83,7 +85,6 @@ module.exports = {
             try {
                 await page.waitForSelector('.continue');
                 await page.$eval('.continue > button', btn => btn.click());
-                console.log(await page.url());
                 return await page.url();
             } catch (error) {
                 console.log('external link not reached :', error.message);
