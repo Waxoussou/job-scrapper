@@ -6,6 +6,7 @@ class WebLink extends URL {
     constructor(website) {
         super(website);
         this.website = this.getWebNameFromPathUrl();
+        this.config = STRUCT_URL[this.website]
     }
 
     getWebNameFromPathUrl = () => {
@@ -17,25 +18,46 @@ class WebLink extends URL {
     setUrlSearchParams(search_params) {
         if (search_params) {
             Object.keys(search_params).map(param => {
-                const new_param = param === 'location' ?
-                    this.checkForSpecificSettings(search_params[param]) :
-                    // STRUCT_URL[this.website].CODE_LIEUX[(search_params[param]).toUpperCase()] :
-                    search_params[param]
-                this.searchParams.set(STRUCT_URL[this.website].PARAMS[param], new_param)
+                const new_param = this.getNewParamFromConfig(param, search_params[param]);
+                this.setSearchParams(param, new_param)
             })
         }
         return this;
     }
 
+    getNewParamFromConfig = (param, value) => {
+        return param === 'location' ?
+            this.checkForSpecificSettings(value) :
+            value
+    }
+
     checkForSpecificSettings = (search_param) => {
-        const code_location = STRUCT_URL[this.website].CODE_LIEUX;
+        const code_location = this.config.CODE_LIEUX;
         if (!code_location) return search_param
         return code_location[search_param.toUpperCase()];
     }
 
+    setSearchParams = (param, value) => {
+        switch (this.config.PARAMS.type) {
+            case 'BY_PATHNAME':
+                this.setSearchParamsByPathname(param, value)
+                break;
+            default:
+                this.searchParams.set(this.config.PARAMS[param], value)
+                break;
+        }
+    }
+
+    setSearchParamsByPathname = (param, value) => {
+        const regexp = this.config.PARAMS[param];
+        this.pathname = this.pathname.replace(regexp, value.trim())
+    }
+
     nextPage() {
-        let current_page = this.searchParams.get('page');
+        let current_page = this.searchParams.get('page') || "1";
+
         current_page++;
+
         this.searchParams.set('page', current_page);
         return this;
     }

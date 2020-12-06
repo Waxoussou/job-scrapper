@@ -5,26 +5,41 @@ const Scrapper = require('./Models/Scrapper');
 
 const colors = require('./colorsUtils');
 const apecController = require('./APEC/controller');
-const meteojobScrapper = require('./METEOJOB/scrapper');
+const meteojobController = require('./METEOJOB/controller');
 const lesjeudisController = require('./LES_JEUDIS/controller');
+const chooseYourbossController = require('./CHOOSE_YOUR_BOSS/controller');
+const monsterController = require('./MONSTER/controller');
+
 
 (async () => {
+    const BrowserOptions = {
+        slowMo: 100,
+        devtools: true,
+        headless: false,
+    }
+
     const scrap = new Scrapper({
-        // headless: false,
-        params: { key_word: 'javascript ', location: "toulouse" },
-        daysSincePublication__limit: 5
+        params: { key_word: 'react ', location: "Toulouse" },
+        daysSincePublication__limit: 4,
+        // BrowserOptions
+
     });
 
     await scrap.setUp();
 
-    const apec = await scrap.run(apecController);
-    const meteojob = await scrap.run(meteojobScrapper)
-    const lesjeudis = await scrap.run(lesjeudisController)
+    // const apec = await scrap.run(apecController);
+    const meteojob = await scrap.run(meteojobController)
+    // const lesjeudis = await scrap.run(lesjeudisController)
+    // const chooseYourboss = await scrap.run(chooseYourbossController)
+    // const monster = await scrap.run(monsterController)
 
     await scrap.close();
 
-    const data = [...apec, ...meteojob,...lesjeudis];
-    // console.log(lesjeudis);
+    // const data = [...apec, ...meteojob, ...lesjeudis, ...chooseYourboss, ...lesjeudis, ...monster];
+    // const data = [...lesjeudis, ...chooseYourboss,  ...monster];
+    const data = [...meteojob];
+
+    console.log(data);
 
     /** WRITTING DATA INTO JSON FILE */
     fs.writeFile("client/data/jobsOffer.json", JSON.stringify({ data }), (err) => {
@@ -40,7 +55,7 @@ const lesjeudisController = require('./LES_JEUDIS/controller');
 //     const options = { params: { key_word: 'react', location: 'Toulouse' }, daysOld_limit: 1 };
 
 //     const apec = await apecScrap(options)
-//     const meteojob = await meteoJobScrapper(options)
+//     const meteojob = await meteojobController(options)
 //     const job_card = [...apec, ...meteojob];
 
 //     console.log(colors.BgRed + 'end of program', colors.Reset);

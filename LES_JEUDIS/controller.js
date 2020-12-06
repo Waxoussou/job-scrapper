@@ -1,16 +1,13 @@
 const config = require('./config');
-const { getPage } = require('../utils');
 
 module.exports = {
     url: config.URL,
     scrapMethodology: async (browser) => {
+
         const scrapAll = async () => {
 
             const page = await browser.getPage();
-
             const jobs = await evaluateJobs(page);
-
-
 
             return jobs
         }

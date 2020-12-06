@@ -2,6 +2,8 @@ const puppeteer = require('puppeteer');
 const WebLink = require("./WebLink");
 const Job = require("./Job");
 
+const colors = require("../colorsUtils");
+
 class Scrapper {
     browserInstance;
     url;
@@ -12,23 +14,23 @@ class Scrapper {
 
     setUp = async () => {
         console.log("Setting Up Scrapper");
-        await this.#launchBrowserInstance(this.options.headless);
+        await this.#launchBrowserInstance();
     }
 
-    #launchBrowserInstance = async (headless) => {
+    #launchBrowserInstance = async () => {
         try {
             const browser = await puppeteer.launch({
-                headless: typeof headless === "boolean" ? headless : true,
-                ...{
-                    // slowMo: 250,
-                    devtools: true
-                }
+                ...this.options.BrowserOptions,
+                args: ["--no-sandbox", "--disable-setuid-sandbox"],
+                ignoreHTTPSErrors: true,
             });
+
             this.browserInstance = browser;
             this.browserInstance.methods = {
                 getPage: this.getPage,
                 getLinkFromNewTargetPage: this.getLinkFromNewTargetPage,
                 goToPageAndCollect: this.goToPageAndCollect,
+                debug: this.debug,
             };
         } catch (error) {
             console.log('ERR:[BROWSER INSTANCE] : could not be launched ', error.message);
@@ -37,15 +39,25 @@ class Scrapper {
 
     run = async (websiteObject) => {
         this.prepareUrl(websiteObject.url);
+        console.log("WEBPAGE LINK= ", this.url);
         const jobs = await this.handleScrapping(websiteObject);
+        if (jobs.length === 0) return [this.errorMessage()];
+
         return jobs;
     }
 
     prepareUrl = (website) => {
         const url = new WebLink(website);
-        url.getWebNameFromPathUrl();
         this.options.params && url.setUrlSearchParams(this.options.params);
         this.url = url;
+    }
+
+    errorMessage = () => {
+        return {
+            website: this.url.getWebNameFromPathUrl(),
+            status: "ERROR",
+            message: "no jobs found, try to look for older offers"
+        };
     }
 
     handleScrapping = async (websiteObject) => {
@@ -57,23 +69,28 @@ class Scrapper {
 
             const job_offers = await websiteObject.scrapMethodology(this.browserInstance.methods)
 
-
-            job_offers.forEach(({ title, company, details, link }) => jobs.push(new Job(title, company, details, link)))
+            if (job_offers) {
+                job_offers.forEach(({ title, company, details, link }) => jobs.push(new Job(title, company, details, link)))
+            }
 
             this.url.nextPage();
+
             isJobDateLimit = this.isLimitReached(jobs)
+            console.log("going next page ? : ", !isJobDateLimit, '\n');
         }
+        console.log({ jobs });
         return jobs.filter(job => job.days_since_publication < this.options.daysSincePublication__limit);
     }
-
+    ƒ
     openNewPage = async () => {
         try {
             const page = await this.browserInstance.newPage();
 
             page.on('load', () => console.log(this.url.getWebNameFromPathUrl(), ' : Page loaded! '));
 
-            const firstpage = await this.browserInstance.pages();
-            await firstpage[0].close()
+            const firstpage = await this.getPage();
+            await firstpage.close()
+
             await page.goto(this.url.href);
         } catch (error) {
             console.log("ERROR_[open new page on url]_: ", error.message);
@@ -86,7 +103,6 @@ class Scrapper {
     }
 
     getLinkFromNewTargetPage = async (page) => {
-        // const page = await this.browserInstance.goto(link);
         const target = await this.waitForNewTargetPage(page);
         const url = await this.getNewOpenedTargetPageUrl(target);
         return url;
@@ -94,7 +110,7 @@ class Scrapper {
 
     waitForNewTargetPage = async (page) => {
         const target = await this.browserInstance.waitForTarget(target => target.opener() === page.target());
-        return target
+        return target;
     }
 
     getNewOpenedTargetPageUrl = async (new_target) => {
@@ -112,6 +128,9 @@ class Scrapper {
     goToPageAndCollect = async (link, collectAction) => {
         const page = await this.getPage();
         await page.goto(link);
+
+        console.log(colors.FgCyan + "going to link : ", link, " to collect jobs data" + colors.Reset);
+
         const res = await collectAction(page, this.getLinkFromNewTargetPage);
 
         return res;
@@ -124,9 +143,10 @@ class Scrapper {
         const nb_job_limit_passed = jobs.filter(job => {
             //must act like there is a date passed since 
             //we can't calcultate diff and want to avoid infinite scrapping
-            if (!job.hasPublicationDate()) return true
+            if (!job.hasPublicationDate()) return true;
             return job.days_since_publication >= this.options.daysSincePublication__limit
         }).length
+
         console.log({ nb_job_limit_passed });
 
         return nb_job_limit_passed > 0 ? true : false;

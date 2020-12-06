@@ -3,16 +3,18 @@ class Job {
         this.title = title;
         this.company = company;
         this.details = details || {};
-        this.days_since_publication = this.details.date_of_publication ? this.#handleDateString(details.date_of_publication.trim()) : null;
+        this.days_since_publication = this.details.date_of_publication ? this.#handleDateString(details.date_of_publication) : null;
         this.link = link;
     }
 
     #handleDateString = (dateString) => {
-        const is_date = this.#isDate(dateString);
-        if (is_date) {
-            const publish_date = this.#takeFrenchDateFormatToUSFormatDate(dateString);
-            return this.#getDaysSincePublication(publish_date);
+        dateString = typeof dateString === 'string' ? dateString.trim() : dateString
+        let publish_date = new Date(dateString);
+        if (publish_date === 'Invalid Date') {
+            const is_date = this.#isDate(dateString);
+            publish_date = is_date && this.#takeFrenchDateFormatToUSFormatDate(dateString);
         }
+        return this.#getDaysSincePublication(publish_date);
     }
 
     #isDate = (string) => {
