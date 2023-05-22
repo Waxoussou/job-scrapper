@@ -17,33 +17,79 @@
     const renderResult = (jobs) => {
         const body = document.querySelector("#App");
         console.log(jobs);
-        jobs.job_card.map(j => {
-            const { job_title, company, link, diff: daysOld } = j
-            const job_container = document.createElement('div')
-            job_container.className = "job-container";
-
-            const offer__link = document.createElement('a')
-            offer__link.href = link;
-
-            const offer__titre = document.createElement('h3');
-            offer__titre.textContent = job_title;
-
-            const offer__company = document.createElement('p');
-            offer__company.textContent = company;
+        jobs.data.map(j => {
+            if (j.status) {
+                getMissingResult(j)
+            } else {
 
 
-            const offer__daysOld = document.createElement('p');
-            offer__daysOld.textContent = daysOld;
-            job_container.appendChild(offer__titre).appendChild(offer__company).appendChild(offer__daysOld)
+                const { title: job_title, company, link, days_since_publication: daysOld, source } = j
+                const job_container = document.createElement('div')
+                job_container.className = "job-container";
 
-            offer__link.appendChild(job_container);
+                const offer__link = document.createElement('a')
+                offer__link.href = link;
 
-            body.appendChild(offer__link);
+                const offer__titre = document.createElement('h3');
+                offer__titre.textContent = job_title;
+
+                const offer__company = document.createElement('p');
+                offer__company.textContent = company;
+
+                const source_website = document.createElement('span');
+                source_website.classList.add('source-website');
+                source_website.textContent = source;
+
+
+                const offer__daysOld = document.createElement('p');
+                offer__daysOld.textContent = daysOld ? daysOld + " days since publication" : 'Publication date unknown';
+                job_container
+                    .appendChild(offer__titre)
+                    .appendChild(offer__company)
+                    .appendChild(offer__daysOld)
+                    .appendChild(source_website)
+
+                offer__link.appendChild(job_container);
+
+                body.appendChild(offer__link);
+            }
         })
 
     }
 
-    const d = fetch("./data/final_data.json")
+
+    const getMissingResult = (job) => {
+
+        const errorDiv = createErrorContainer()
+        const container = document.createElement("div")
+        container.classList.add('error-item');
+
+        const source = document.createElement('h4');
+        source.textContent = job.website;
+
+        const message = document.createElement('p');
+        message.textContent = job.message;
+
+        container.appendChild(source)
+        container.appendChild(message)
+
+        errorDiv.appendChild(container)
+
+        document.querySelector('#App').parentElement.insertBefore(errorDiv, document.querySelector('#App'))
+    }
+
+    const createErrorContainer = () => {
+        if (document.querySelector('.error-container')) {
+            return document.querySelector('.error-container')
+        }
+        else {
+            const div = document.createElement('div')
+            div.classList.add('error-container');
+            return div
+        }
+    }
+
+    const d = fetch("./data/jobsOffer.json")
         .then(res => {
             console.log(res);
             return res.json()

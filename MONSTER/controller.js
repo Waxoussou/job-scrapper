@@ -43,7 +43,7 @@ module.exports = {
         const getPublicationDateFormat = (string) => {
             let date = new Date();
             if (!string.includes("aujourd'hui")) {
-                const regexp = /^il y a \+?(\d{1,2}) jours$/;
+                const regexp = /^il y a \+?(\d{1,2}) jours?$/;
                 const days = string.match(regexp)[1]
 
                 date.setDate(date.getDate() - days);

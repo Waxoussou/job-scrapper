@@ -1,5 +1,6 @@
 class Job {
-    constructor(title, company, details, link) {
+    constructor(title, company, details, link, source) {
+        this.source = source;
         this.title = title;
         this.company = company;
         this.details = details || {};

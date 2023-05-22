@@ -1,6 +1,6 @@
 module.exports = {
     url: "https://www.chooseyourboss.com/offres/emploi-{what}-{where}",
-    scrapMethodology: async (browser) => {
+    async scrapMethodology(browser) {
         const scrappAll = async () => {
             const page = await browser.getPage();
             const jobs = await collectAllJobsFromPage(page);
@@ -8,6 +8,7 @@ module.exports = {
             return jobs
         }
         const collectAllJobsFromPage = async (page) => {
+
             console.log('collecting job ');
             try {
                 await page.waitForSelector('.container>.row>.col-md-8.col-xs-12');

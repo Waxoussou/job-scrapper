@@ -12,6 +12,7 @@ module.exports = {
             const page = await browser.getPage();
             const jobs = await collectAllJobsFromPage(page);
             handleApecPublicationDateFormat(jobs);
+            
             for (job in jobs) {
                 const { link } = jobs[job];
                 jobs[job].link = await browser.goToPageAndCollect(link, getExternalLink);

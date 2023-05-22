@@ -6,7 +6,7 @@ class WebLink extends URL {
     constructor(website) {
         super(website);
         this.website = this.getWebNameFromPathUrl();
-        this.config = STRUCT_URL[this.website]
+        this.config = STRUCT_URL[this.website];
     }
 
     getWebNameFromPathUrl = () => {
@@ -33,17 +33,17 @@ class WebLink extends URL {
 
     checkForSpecificSettings = (search_param) => {
         const code_location = this.config.CODE_LIEUX;
-        if (!code_location) return search_param
+        if (!code_location) return search_param;
         return code_location[search_param.toUpperCase()];
     }
 
     setSearchParams = (param, value) => {
         switch (this.config.PARAMS.type) {
             case 'BY_PATHNAME':
-                this.setSearchParamsByPathname(param, value)
+                this.setSearchParamsByPathname(param, value);
                 break;
             default:
-                this.searchParams.set(this.config.PARAMS[param], value)
+                this.searchParams.set(this.config.PARAMS[param], value);
                 break;
         }
     }
@@ -51,6 +51,7 @@ class WebLink extends URL {
     setSearchParamsByPathname = (param, value) => {
         const regexp = this.config.PARAMS[param];
         this.pathname = this.pathname.replace(regexp, value.trim())
+        console.log(this.href);
     }
 
     nextPage() {

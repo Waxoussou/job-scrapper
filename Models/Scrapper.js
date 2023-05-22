@@ -39,7 +39,7 @@ class Scrapper {
 
     run = async (websiteObject) => {
         this.prepareUrl(websiteObject.url);
-        console.log("WEBPAGE LINK= ", this.url);
+        console.log("scraping website = ", this.url.getWebNameFromPathUrl());
         const jobs = await this.handleScrapping(websiteObject);
         if (jobs.length === 0) return [this.errorMessage()];
 
@@ -60,28 +60,26 @@ class Scrapper {
         };
     }
 
-    handleScrapping = async (websiteObject) => {
-        let jobs = [];
-        let isJobDateLimit = false;
+    handleScrapping = async (websiteObject, jobs = []) => {
+        await this.openNewPage();
 
-        while (!isJobDateLimit) {
-            await this.openNewPage();
+        const job_offers = await websiteObject.scrapMethodology(this.browserInstance.methods)
 
-            const job_offers = await websiteObject.scrapMethodology(this.browserInstance.methods)
+        if (job_offers) {
+            job_offers.forEach(({ title, company, details, link }) => {
+                const source = this.url.getWebNameFromPathUrl();
+                jobs.push(new Job(title, company, details, link, source))
+            })
 
-            if (job_offers) {
-                job_offers.forEach(({ title, company, details, link }) => jobs.push(new Job(title, company, details, link)))
-            }
-
-            this.url.nextPage();
-
-            isJobDateLimit = this.isLimitReached(jobs)
-            console.log("going next page ? : ", !isJobDateLimit, '\n');
         }
-        console.log({ jobs });
-        return jobs.filter(job => job.days_since_publication < this.options.daysSincePublication__limit);
+
+        if (this.isLimitReached(jobs)) return jobs.filter(job => job.days_since_publication < this.options.daysSincePublication__limit);;
+
+        this.url.nextPage();
+        return handleScrapping(websiteObject, jobs)
     }
-    ƒ
+
+
     openNewPage = async () => {
         try {
             const page = await this.browserInstance.newPage();
@@ -129,7 +127,7 @@ class Scrapper {
         const page = await this.getPage();
         await page.goto(link);
 
-        console.log(colors.FgCyan + "going to link : ", link, " to collect jobs data" + colors.Reset);
+        console.log(colors.FgCyan + "start collecting details from : " + colors.Reset, link,);
 
         const res = await collectAction(page, this.getLinkFromNewTargetPage);
 

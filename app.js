@@ -12,6 +12,9 @@ const monsterController = require('./MONSTER/controller');
 
 
 (async () => {
+
+    //     exec('node server.js', (err) => { if (err) console.log(err) })
+
     const BrowserOptions = {
         slowMo: 100,
         devtools: true,
@@ -19,25 +22,24 @@ const monsterController = require('./MONSTER/controller');
     }
 
     const scrap = new Scrapper({
-        params: { key_word: 'react ', location: "Toulouse" },
-        daysSincePublication__limit: 4,
+        params: { key_word: 'javascript ', location: "toulouse" },
+        daysSincePublication__limit: 5,
         // BrowserOptions
-
     });
 
     await scrap.setUp();
 
-    // const apec = await scrap.run(apecController);
+    const apec = await scrap.run(apecController);
     const meteojob = await scrap.run(meteojobController)
-    // const lesjeudis = await scrap.run(lesjeudisController)
-    // const chooseYourboss = await scrap.run(chooseYourbossController)
-    // const monster = await scrap.run(monsterController)
+    const lesjeudis = await scrap.run(lesjeudisController)
+    const chooseYourboss = await scrap.run(chooseYourbossController)
+    const monster = await scrap.run(monsterController)
 
     await scrap.close();
 
-    // const data = [...apec, ...meteojob, ...lesjeudis, ...chooseYourboss, ...lesjeudis, ...monster];
-    // const data = [...lesjeudis, ...chooseYourboss,  ...monster];
-    const data = [...meteojob];
+    const data = [...apec, ...meteojob, ...lesjeudis, ...chooseYourboss, ...monster];
+    // const data = [...lesjeudis, ...chooseYourboss, ...monster];
+    // const data = [...meteojob];
 
     console.log(data);
 
@@ -46,6 +48,11 @@ const monsterController = require('./MONSTER/controller');
         if (err) throw err;
         console.log(colors.FgGreen + 'jobs saved successfully' + colors.Reset);
     });
+
+    //     /** LAUNCH BROWSER AND LOAD DATA FROM JSON */
+    //     await exec(" open http://127.0.0.1:8125/", (err) => {
+    //         if (err) colorLog("FgRed", err.message);
+    //     })
 
 })()
 
